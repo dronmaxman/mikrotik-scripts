@@ -1,0 +1,22 @@
+:local recipient "MYUSER@gmail.com"
+
+:if ($leaseBound = 1) do={
+:do {
+        :local deviceName [/system identity get name];
+        
+        :do {
+            /interface/bridge/host
+            :local interFace [get [find mac-address=$leaseActMAC] interface]
+         } on-error={:local interFace "NotFound"} 
+
+        /ip dhcp-server lease 
+        :local hostName [get value-name=host-name number=[find address=$leaseActIP]]
+        :local Comment [get value-name=comment number=[find address=$leaseActIP]]
+        
+       :tool e-mail send to=$recipient subject="DHCP Address [MAC: $leaseActMAC]" body="Mikrotik: [$deviceName] \n Interface: [$interFace] \n Hostname: [$hostName] \n MAC address [$leaseActMAC] \n IP address [$leaseActIP] \n Comment: [$Comment]"
+       
+        :log warning "DHCP Alert: $hostName [ $leaseActMAC ] is connect to $interFace"
+    
+    } on-error={:log error "Script: Email notification on DHCP - failure"}
+
+}
